@@ -326,11 +326,25 @@ def smart_process(message: str) -> str:
     logger.info(f"智能处理消息: {message}")
 
     # 模式 1: 系统信息查询
-    system_keywords = ['系统', '状态', 'cpu', '内存', '磁盘', 'system', '状态']
+    system_keywords = ['系统', '状态', 'cpu', '内存', '磁盘', 'system']
     if any(kw in message_lower for kw in system_keywords):
         result = get_system_info()
         if result['success']:
-            return f"📊 **系统状态**\n\n" + "\n".join([f"**{k}**: {v}" for k, v in result['data'].items()])
+            output = "📊 **系统状态**\n\n"
+            for key, value in result['data'].items():
+                # 提取百分比用于可视化
+                percent_match = re.search(r'(\d+)%', value)
+                if percent_match:
+                    percent = int(percent_match.group(1))
+                    # 创建进度条
+                    bar_length = 20
+                    filled = int(bar_length * percent / 100)
+                    bar = '█' * filled + '░' * (bar_length - filled)
+                    output += f"**{key}**\n"
+                    output += f"```\n{bar} {value}\n```\n"
+                else:
+                    output += f"**{key}**: {value}\n"
+            return output
 
     # 模式 2: 目录分析
     if '分析' in message and ('目录' in message or '文件夹' in message or '下载' in message):
@@ -368,9 +382,19 @@ def smart_process(message: str) -> str:
         cmd_match = re.search(r'(执行|run|运行)\s+(.+)', message, re.IGNORECASE)
         if cmd_match:
             cmd = cmd_match.group(2).strip()
+            # 移除末尾的"命令"二字（例如："执行 pwd 命令" -> "pwd"）
+            cmd = re.sub(r'\s*命令\s*$', '', cmd).strip()
+
+            logger.info(f"执行命令: {cmd}")
             result = execute_shell_command(cmd)
             if result['success']:
-                return f"✅ **命令执行成功**\n\n```\n{result['output'][:1000]}\n```"
+                output = result['output'].strip()
+                if not output:
+                    return "✅ **命令执行成功**（无输出）"
+                # 截断过长的输出
+                if len(output) > 1000:
+                    output = output[:1000] + "\n... (输出已截断)"
+                return f"✅ **命令执行成功**\n\n```\n{output}\n```"
             else:
                 return f"❌ **命令执行失败**\n\n{result.get('error', '未知错误')}"
 
