@@ -230,6 +230,9 @@ def execute_shell_command(command: str, timeout: int = 30) -> dict:
 
 def call_glm_api(message: str) -> str:
     """调用 GLM API 进行对话"""
+    if not glm_client:
+        return "⚠️ GLM API 未配置。请在 .env 文件中设置 GLM_API_KEY。\n\n注意：系统命令仍然可以正常使用，如：\n- \"帮我分析下下载目录\"\n- \"看看系统状态\"\n- \"列出文件\""
+
     try:
         response = glm_client.chat.completions.create(
             model=CONFIG['glm_model'],
@@ -243,7 +246,7 @@ def call_glm_api(message: str) -> str:
 
     except Exception as e:
         logger.error(f"调用 GLM API 失败: {str(e)}")
-        return f"抱歉，调用 GLM API 时出错: {str(e)}"
+        return f"⚠️ 调用 GLM API 出错: {str(e)}\n\n💡 请检查 API 密钥配置或使用系统命令功能。"
 
 
 # ===================== 智能处理器 =====================
