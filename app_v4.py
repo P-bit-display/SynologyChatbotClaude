@@ -261,6 +261,23 @@ def smart_process(message: str) -> str:
         # 手动命令模式
         return process_command(message)
 
+    # ========== 快捷命令模式 ==========
+    if message.startswith('/') and not message.startswith(('/task ', '/status ', '/tasks')):
+        # 处理 /pwd, /ls, /whoami 等快捷命令
+        cmd = message[1:].strip()
+        if cmd:
+            logger.info(f"快捷命令: {cmd}")
+            result = execute_shell_command(cmd)
+            if result['success']:
+                output = result['output'].strip()
+                if not output:
+                    return "✅ **命令执行成功**（无输出）"
+                if len(output) > 1000:
+                    output = output[:1000] + "\n... (输出已截断)"
+                return f"✅ **命令执行成功**\n\n```\n{output}\n```"
+            else:
+                return f"❌ **命令执行失败**\n\n{result.get('error', '未知错误')}"
+
     # ========== 帮助命令 ==========
     if message in ['/help', '帮助', 'help']:
         return """🤖 Synology Chat 智能助手
@@ -271,12 +288,18 @@ def smart_process(message: str) -> str:
    "列出文件"
    "执行 ls 命令"
 
+💻 **快捷命令**：
+   /pwd              - 显示当前目录
+   /ls               - 列出文件
+   /whoami           - 显示当前用户
+   /<命令>           - 执行任意命令
+
 📋 **任务系统**：
    /task <任务描述> - 创建复杂任务
    /status <id>      - 查看任务状态
    /tasks            - 查看所有任务
 
-💻 **命令模式**：
+💻 **传统命令模式**：
    $sys              - 系统信息
    $ps               - 进程列表
    $ command         - 执行命令"""
