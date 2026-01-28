@@ -1,0 +1,20 @@
+# Web 框架
+Flask>=3.0.0
+
+# 环境变量管理
+python-dotenv>=1.0.0
+
+# HTTP 请求
+requests>=2.31.0
+
+# Claude API
+anthropic>=0.40.0
+
+# 智谱 GLM API
+zhipuai>=2.1.0
+
+# WSGI 服务器（生产环境推荐）
+gunicorn>=21.2.0
+
+# 日志
+colorlog>=6.8.0

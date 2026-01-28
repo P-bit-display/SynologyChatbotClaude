@@ -1,0 +1,54 @@
+# 环境变量（包含 API 密钥）
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 日志文件
+*.log
+service.log
+error.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# 测试
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 临时文件
+*.tmp
+*.bak
+
+# 任务文件（包含个人数据）
+tasks/*.json
+!tasks/README.md
