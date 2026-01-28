@@ -362,12 +362,28 @@ def smart_process(message: str) -> str:
         else:
             return f"❌ 分析失败: {result['error']}"
 
-    # 模式 3: 列出文件
-    if '列表' in message or '列出' in message or 'ls' in message_lower or '文件' in message:
+    # 模式 3: 执行命令（优先级高于列出文件）
+    if message.startswith('执行') or message.startswith('run') or message.startswith('运行'):
+        # 提取命令
+        cmd_match = re.search(r'(执行|run|运行)\s+(.+)', message, re.IGNORECASE)
+        if cmd_match:
+            cmd = cmd_match.group(2).strip()
+            result = execute_shell_command(cmd)
+            if result['success']:
+                return f"✅ **命令执行成功**\n\n```\n{result['output'][:1000]}\n```"
+            else:
+                return f"❌ **命令执行失败**\n\n{result.get('error', '未知错误')}"
+
+    # 模式 4: 列出文件
+    if '列表' in message or '列出' in message or 'ls' in message_lower or ('文件' in message and '列出' in message):
         # 尝试提取路径
         path = None
         if '下载' in message or 'download' in message_lower:
             path = '~/Downloads'
+        elif '桌面' in message or 'desktop' in message_lower:
+            path = '~/Desktop'
+        elif '文档' in message or 'document' in message_lower:
+            path = '~/Documents'
         elif '当前' in message:
             path = '.'
 
@@ -382,7 +398,7 @@ def smart_process(message: str) -> str:
         else:
             return f"❌ 列出失败: {result['error']}"
 
-    # 模式 4: 进程查询
+    # 模式 5: 进程查询
     if '进程' in message or 'process' in message_lower or '运行' in message:
         try:
             processes = []
@@ -405,18 +421,6 @@ def smart_process(message: str) -> str:
             return output
         except Exception as e:
             return f"❌ 获取进程失败: {str(e)}"
-
-    # 模式 5: 执行命令
-    if message.startswith('执行') or message.startswith('run') or message.startswith('运行'):
-        # 提取命令
-        cmd_match = re.search(r'(执行|run|运行)\s+(.+)', message, re.IGNORECASE)
-        if cmd_match:
-            cmd = cmd_match.group(2).strip()
-            result = execute_shell_command(cmd)
-            if result['success']:
-                return f"✅ **命令执行成功**\n\n```\n{result['output'][:1000]}\n```"
-            else:
-                return f"❌ **命令执行失败**\n\n{result.get('error', '未知错误')}"
 
     # 默认：普通对话
     return call_glm_api(message)
